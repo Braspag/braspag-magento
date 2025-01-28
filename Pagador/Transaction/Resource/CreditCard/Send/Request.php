@@ -55,21 +55,21 @@ class Request extends RequestAbstract
                     'birthDate' => $this->data->getCustomerBirthDate(),
                     'phone' => $this->data->getCustomerAddressPhone(),
                     'address' => [
-                        'street' => $this->data->getCustomerAddressStreet(),
-                        'number' => $this->data->getCustomerAddressNumber(),
-                        'complement' => $this->data->getCustomerAddressComplement(),
+                        'street' => (substr($this->data->getCustomerAddressStreet(), 0, 53)), 
+                        'number' => (substr($this->data->getCustomerAddressNumber(), 0, 4)),
+                        'complement' => (substr($this->data->getCustomerAddressComplement(), 0,10)),
                         'zipCode' => $this->data->getCustomerAddressZipCode(),
-                        'district' => $this->data->getCustomerAddressDistrict(),
+                        'district' => (substr($this->data->getCustomerAddressDistrict(), 0, 44)), 
                         'city' => $this->data->getCustomerAddressCity(),
                         'state' => $this->data->getCustomerAddressState(),
                         'country' => $this->data->getCustomerAddressCountry(),
                     ],
                     'deliveryAddress' => [
-                        'street' => $this->data->getCustomerDeliveryAddressStreet(),
-                        'number' => $this->data->getCustomerDeliveryAddressNumber(),
-                        'complement' => $this->data->getCustomerDeliveryAddressComplement(),
+                        'street' => (substr($this->data->getCustomerDeliveryAddressStreet(), 0, 53)),
+                        'number' => (substr($this->data->getCustomerDeliveryAddressNumber(), 0, 4)),
+                        'complement' =>(substr($this->data->getCustomerDeliveryAddressComplement(), 0,10)),
                         'zipCode' => $this->data->getCustomerDeliveryAddressZipCode(),
-                        'district' => $this->data->getCustomerDeliveryAddressDistrict(),
+                        'district' => (substr($this->data->getCustomerDeliveryAddressDistrict(), 0, 44)),
                         'city' => $this->data->getCustomerDeliveryAddressCity(),
                         'state' => $this->data->getCustomerDeliveryAddressState(),
                         'country' => $this->data->getCustomerDeliveryAddressCountry(),
@@ -99,7 +99,10 @@ class Request extends RequestAbstract
         if (($antiFraudRequest = $this->data->getAntiFraudRequest()) && !$this->data->getPaymentAuthenticate()) {
             $antiFraud = AntiFraudRequestFactory::make($antiFraudRequest);
             $this->params['body']['payment']['FraudAnalysis'] = $antiFraud->getParams();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Identity'] = $this->data->getCustomerIdentity();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['IdentityType'] = $this->data->getCustomerIdentityType();
         }
+
 
         if ($avsRequest = $this->data->getAvsRequest()) {
             $avs = CreditCardAvsRequestFactory::make($avsRequest);
