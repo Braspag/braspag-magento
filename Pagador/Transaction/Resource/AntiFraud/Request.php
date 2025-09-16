@@ -141,44 +141,6 @@ class Request extends RequestAbstract
                 'Value' => substr($data->getStoreCode(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ];
         }
-
-       // if ($data->getCustomerIdentity()) {
-          //  $mddCollection[] =  [
-            //    'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_IDENTITY,
-            //    'Value' => substr($data->getCustomerIdentity(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
-           // ];
-       // }
-
-        // if ($data->getStoreIdentity()) {
-        //    $mddCollection[] =  [
-        //        'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_IDENTITY,
-        //       'Value' => substr($data->getStoreIdentity(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
-        //   ];
-        //  }
-
-
-        //  if ($data->getProvider()) {
-           // $mddCollection[] = [
-            //    'Id' => GeneralRequestInterface::MDD_KEY_PROVIDER,
-            //    'Value' => substr((($data->getProvider()) ? $data->getProvider() : 'Braspag'), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
-            // ];
-         // }
-
-        // if ($data->getCustomerIsRisk()) {
-         //   $mddCollection[] = 
-         //   [
-          //      'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_IS_RISK,
-          //      'Value' => substr($data->getCustomerIsRisk(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
-          //  ];
-         //  }
-
-        //if ($data->getCustomerIsVIP()) {
-        //    $mddCollection[] = 
-         //   [
-         //       'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_IS_VIP,
-          //      'Value' => substr($data->getCustomerIsVIP(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
-          //  ];
-         // }
        
         if ($data->getCouponCode()) {
             $mddCollection[] = 
@@ -197,6 +159,28 @@ class Request extends RequestAbstract
         }
 
 
+        if ($data->hasCustomMDD() && $data->getAFType() == 'Cybersource') {
+
+            $customMDDs = [
+                '85' => $data->getOrderData($data->getCustomMDD85()),
+                '86' => $data->getOrderData($data->getCustomMDD86()),
+                '87' => $data->getOrderData($data->getCustomMDD87()),
+                '88' => $data->getOrderData($data->getCustomMDD88()),
+                '89' => $data->getOrderData($data->getCustomMDD89())
+            ];
+            
+            foreach ($customMDDs as $id => $value) {
+                if (isset($value) && $value !== '') {
+                    $mddCollection[] = [
+                        'Id' => $id,
+                        'Value' => $value
+                    ];
+                }
+            }
+          
+        }
+
+        
         $result = [];
         foreach ($mddCollection as $mdd) {
             if ($mdd['Value']) {

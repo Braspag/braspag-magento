@@ -79,4 +79,20 @@ interface GeneralRequestInterface
     public function getVerticalSegment();
 
     public function getPlataformName();
+
+    public function getAFType();
+    
+    public function hasCustomMDD();
+        
+    public function getCustomMDD85();
+
+    public function getCustomMDD86();
+
+    public function getCustomMDD87();
+
+    public function getCustomMDD88();
+
+    public function getCustomMDD89();
+
+    public function getOrderData($data);
 }
