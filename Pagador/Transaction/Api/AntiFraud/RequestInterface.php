@@ -46,4 +46,6 @@ interface RequestInterface
     public function getCartShippingMethod();
 
     public function getCartShippingPhone();
+
+    public function getTotalOrderAmount();
 }

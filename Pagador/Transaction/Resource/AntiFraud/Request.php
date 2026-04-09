@@ -36,6 +36,7 @@ class Request extends RequestAbstract
             'Sequence' => $this->data->getSequence(),
             'SequenceCriteria' => $this->data->getSequenceCriteria(),
             'FingerPrintId' => $this->data->getFingerPrintId(),
+            'TotalOrderAmount' => $this->data->getTotalOrderAmount(),
             'CaptureOnLowRisk' => $this->data->getCaptureOnLowRisk(),
             'VoidOnHighRisk' => $this->data->getVoidOnHighRisk(),
             'Browser' => [
@@ -57,9 +58,22 @@ class Request extends RequestAbstract
             ],
         ];
 
-        $hasMDDS =  $this->getMDDs($this->data->getMerchantDefinedFields());
-        if ($hasMDDS) {
-            $this->params['MerchantDefinedFields'] = $this->getMDDs($this->data->getMerchantDefinedFields());
+        $afType = $this->data->getMerchantDefinedFields()->getAFType();
+        if (isset($afType)) {
+            $this->params['Provider'] = $afType;
+        }
+
+        if ($afType === 'ClearSale') {
+            $this->params['Shipping']['Phone'] = $this->formatPhoneClearSale(
+                $this->params['Shipping']['Phone']
+            );
+        }
+
+        if ($afType !== 'ClearSale') {
+            $hasMDDS =  $this->getMDDs($this->data->getMerchantDefinedFields());
+            if ($hasMDDS) {
+                $this->params['MerchantDefinedFields'] = $this->getMDDs($this->data->getMerchantDefinedFields());
+            }
         }
 
         return $this;
@@ -107,6 +121,37 @@ class Request extends RequestAbstract
         return $result;
     }
 
+    /**
+     * @param string $phone
+     * @return string
+     */
+    private function formatPhoneClearSale($phone)
+    {
+        $digits = substr(preg_replace('/[^0-9]/', '', $phone), 0, 13);
+
+        if (strlen($digits) >= 12 && substr($digits, 0, 2) === '55') {
+            $ddi = substr($digits, 0, 2);
+            $ddd = substr($digits, 2, 2);
+            $number = substr($digits, 4);
+        } elseif (strlen($digits) >= 10) {
+            $ddi = '55';
+            $ddd = substr($digits, 0, 2);
+            $number = substr($digits, 2);
+        } else {
+            return $phone;
+        }
+
+        if (strlen($number) === 9) {
+            $part1 = substr($number, 0, 5);
+            $part2 = substr($number, 5);
+        } else {
+            $part1 = substr($number, 0, 4);
+            $part2 = substr($number, 4);
+        }
+
+        return '+' . $ddi . ' ' . $ddd . ' ' . $part1 . '-' . $part2;
+    }
+
     private function getMDDs(GeneralRequestInterface $data)
     {
 
@@ -141,9 +186,9 @@ class Request extends RequestAbstract
                 'Value' => substr($data->getStoreCode(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ];
         }
-       
+
         if ($data->getCouponCode()) {
-            $mddCollection[] = 
+            $mddCollection[] =
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_COUPON_CODE,
                 'Value' => substr($data->getCouponCode(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
@@ -151,7 +196,7 @@ class Request extends RequestAbstract
         }
 
         if ($data->getVerticalSegment()) {
-            $mddCollection[] = 
+            $mddCollection[] =
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_VERTICAL_SEGMENT,
                 'Value' => substr($data->getVerticalSegment(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
@@ -168,7 +213,7 @@ class Request extends RequestAbstract
                 '88' => $data->getOrderData($data->getCustomMDD88()),
                 '89' => $data->getOrderData($data->getCustomMDD89())
             ];
-            
+
             foreach ($customMDDs as $id => $value) {
                 if (isset($value) && $value !== '') {
                     $mddCollection[] = [
@@ -177,10 +222,10 @@ class Request extends RequestAbstract
                     ];
                 }
             }
-          
+
         }
 
-        
+
         $result = [];
         foreach ($mddCollection as $mdd) {
             if ($mdd['Value']) {

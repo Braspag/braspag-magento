@@ -55,11 +55,11 @@ class Request extends RequestAbstract
                     'birthDate' => $this->data->getCustomerBirthDate(),
                     'phone' => $this->data->getCustomerAddressPhone(),
                     'address' => [
-                        'street' => (substr($this->data->getCustomerAddressStreet(), 0, 53)), 
+                        'street' => (substr($this->data->getCustomerAddressStreet(), 0, 53)),
                         'number' => (substr($this->data->getCustomerAddressNumber(), 0, 4)),
                         'complement' => (substr($this->data->getCustomerAddressComplement(), 0,10)),
                         'zipCode' => $this->data->getCustomerAddressZipCode(),
-                        'district' => (substr($this->data->getCustomerAddressDistrict(), 0, 44)), 
+                        'district' => (substr($this->data->getCustomerAddressDistrict(), 0, 44)),
                         'city' => $this->data->getCustomerAddressCity(),
                         'state' => $this->data->getCustomerAddressState(),
                         'country' => $this->data->getCustomerAddressCountry(),
@@ -101,6 +101,33 @@ class Request extends RequestAbstract
             $this->params['body']['payment']['FraudAnalysis'] = $antiFraud->getParams();
             $this->params['body']['payment']['FraudAnalysis']['Shipping']['Identity'] = $this->data->getCustomerIdentity();
             $this->params['body']['payment']['FraudAnalysis']['Shipping']['IdentityType'] = $this->data->getCustomerIdentityType();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Street'] = $this->data->getCustomerDeliveryAddressStreet();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Number'] = $this->data->getCustomerDeliveryAddressNumber();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Complement'] = $this->data->getCustomerDeliveryAddressComplement();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Neighborhood'] = $this->data->getCustomerDeliveryAddressDistrict();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['City'] = $this->data->getCustomerDeliveryAddressCity();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['State'] = $this->data->getCustomerDeliveryAddressState();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Country'] = $this->data->getCustomerDeliveryAddressCountry();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['ZipCode'] = $this->data->getCustomerDeliveryAddressZipCode();
+            $this->params['body']['payment']['FraudAnalysis']['Shipping']['Email'] = $this->data->getCustomerEmail();
+
+            // Formatacoes especificas ClearSale
+            if (isset($this->params['body']['payment']['FraudAnalysis']['Provider'])
+                && $this->params['body']['payment']['FraudAnalysis']['Provider'] === 'ClearSale'
+            ) {
+                $this->params['body']['customer']['phone'] = $this->formatPhoneClearSale(
+                    $this->params['body']['customer']['phone']
+                );
+                $this->params['body']['customer']['address']['zipCode'] = $this->formatZipCode(
+                    $this->params['body']['customer']['address']['zipCode']
+                );
+                $this->params['body']['customer']['deliveryAddress']['zipCode'] = $this->formatZipCode(
+                    $this->params['body']['customer']['deliveryAddress']['zipCode']
+                );
+                $this->params['body']['payment']['FraudAnalysis']['Shipping']['ZipCode'] = $this->formatZipCode(
+                    $this->params['body']['payment']['FraudAnalysis']['Shipping']['ZipCode']
+                );
+            }
         }
 
 
@@ -186,5 +213,49 @@ class Request extends RequestAbstract
     {
         $extDataCollection = array(array('Name' => 'Plataforma', 'Value' => 'Magento'));
         return $extDataCollection;
+    }
+
+    /**
+     * @param string $zipCode
+     * @return string
+     */
+    private function formatZipCode($zipCode)
+    {
+        $digits = preg_replace('/[^0-9]/', '', $zipCode);
+        if (strlen($digits) === 8) {
+            return substr($digits, 0, 5) . '-' . substr($digits, 5, 3);
+        }
+        return $zipCode;
+    }
+
+    /**
+     * @param string $phone
+     * @return string
+     */
+    private function formatPhoneClearSale($phone)
+    {
+        $digits = substr(preg_replace('/[^0-9]/', '', $phone), 0, 13);
+
+        if (strlen($digits) >= 12 && substr($digits, 0, 2) === '55') {
+            $ddi = substr($digits, 0, 2);
+            $ddd = substr($digits, 2, 2);
+            $number = substr($digits, 4);
+        } elseif (strlen($digits) >= 10) {
+            $ddi = '55';
+            $ddd = substr($digits, 0, 2);
+            $number = substr($digits, 2);
+        } else {
+            return $phone;
+        }
+
+        if (strlen($number) === 9) {
+            $part1 = substr($number, 0, 5);
+            $part2 = substr($number, 5);
+        } else {
+            $part1 = substr($number, 0, 4);
+            $part2 = substr($number, 4);
+        }
+
+        return '+' . $ddi . ' ' . $ddd . ' ' . $part1 . '-' . $part2;
     }
 }

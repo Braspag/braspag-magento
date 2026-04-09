@@ -67,7 +67,7 @@ class Client implements ClientInterface
             $uri,
             [
                 'headers' => $headers,
-                'body' => json_encode($body),
+                'body' => json_encode($body, JSON_UNESCAPED_UNICODE),
                 'handler' => $this->handler
             ]
         );
