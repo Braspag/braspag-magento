@@ -100,7 +100,7 @@ class Request extends RequestAbstract
                 'ObscenitiesHedge' => $item->getObscenitiesHedge(),
                 'PhoneHedge' => $item->getPhoneHedge(),
                 'Name' => $item->getName(),
-                'Quantity' => preg_replace('/[^0-9]/', '', $item->getQuantity()),
+                'Quantity' => preg_replace('/[^0-9]/', '', (string) ($item->getQuantity() ?? '')),
                 'Sku' => $item->getSku(),
                 'UnitPrice' => $item->getUnitPrice(),
                 'Risk' => $item->getRisk(),
@@ -127,7 +127,10 @@ class Request extends RequestAbstract
      */
     private function formatPhoneClearSale($phone)
     {
-        $digits = substr(preg_replace('/[^0-9]/', '', $phone), 0, 13);
+        if ($phone === null || $phone === '') {
+            return $phone;
+        }
+        $digits = substr(preg_replace('/[^0-9]/', '', (string) $phone), 0, 13);
 
         if (strlen($digits) >= 12 && substr($digits, 0, 2) === '55') {
             $ddi = substr($digits, 0, 2);
@@ -160,30 +163,30 @@ class Request extends RequestAbstract
         $mddCollection = [
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_NAME,
-                'Value' => substr($data->getCustomerName(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getCustomerName() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ],
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_SALES_ORDER_CHANNEL,
-                'Value' => substr($data->getSalesOrderChannel(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getSalesOrderChannel() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ],
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_CUSTOMER_FETCH_SELF,
-                'Value' => substr($data->getCustomerFetchSelf(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getCustomerFetchSelf() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ],
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_QTY_INSTALLMENTS_ORDER,
-                'Value' => substr($data->getQtyInstallmentsOrder(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getQtyInstallmentsOrder() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ],
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_PLATAFORM_NAME,
-                'Value' => substr($data->getPlataformName(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getPlataformName() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ]
         ];
 
         if ($data->getStoreCode() && $data->getCustomerFetchSelf() == 'Sim') {
             $mddCollection[] = [
                 'Id' => GeneralRequestInterface::MDD_KEY_STORE_CODE,
-                'Value' => substr($data->getStoreCode(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getStoreCode() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ];
         }
 
@@ -191,7 +194,7 @@ class Request extends RequestAbstract
             $mddCollection[] =
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_COUPON_CODE,
-                'Value' => substr($data->getCouponCode(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getCouponCode() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ];
         }
 
@@ -199,7 +202,7 @@ class Request extends RequestAbstract
             $mddCollection[] =
             [
                 'Id' => GeneralRequestInterface::MDD_KEY_VERTICAL_SEGMENT,
-                'Value' => substr($data->getVerticalSegment(), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
+                'Value' => substr((string) ($data->getVerticalSegment() ?? ''), 0, GeneralRequestInterface::MDD_KEY_LIMIT_CHARACTERS)
             ];
         }
 

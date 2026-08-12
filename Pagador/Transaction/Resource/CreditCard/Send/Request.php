@@ -55,21 +55,21 @@ class Request extends RequestAbstract
                     'birthDate' => $this->data->getCustomerBirthDate(),
                     'phone' => $this->data->getCustomerAddressPhone(),
                     'address' => [
-                        'street' => (substr($this->data->getCustomerAddressStreet(), 0, 53)),
-                        'number' => (substr($this->data->getCustomerAddressNumber(), 0, 4)),
-                        'complement' => (substr($this->data->getCustomerAddressComplement(), 0,10)),
+                        'street' => substr((string) ($this->data->getCustomerAddressStreet() ?? ''), 0, 53),
+                        'number' => substr((string) ($this->data->getCustomerAddressNumber() ?? ''), 0, 4),
+                        'complement' => substr((string) ($this->data->getCustomerAddressComplement() ?? ''), 0, 10),
                         'zipCode' => $this->data->getCustomerAddressZipCode(),
-                        'district' => (substr($this->data->getCustomerAddressDistrict(), 0, 44)),
+                        'district' => substr((string) ($this->data->getCustomerAddressDistrict() ?? ''), 0, 44),
                         'city' => $this->data->getCustomerAddressCity(),
                         'state' => $this->data->getCustomerAddressState(),
                         'country' => $this->data->getCustomerAddressCountry(),
                     ],
                     'deliveryAddress' => [
-                        'street' => (substr($this->data->getCustomerDeliveryAddressStreet(), 0, 53)),
-                        'number' => (substr($this->data->getCustomerDeliveryAddressNumber(), 0, 4)),
-                        'complement' =>(substr($this->data->getCustomerDeliveryAddressComplement(), 0,10)),
+                        'street' => substr((string) ($this->data->getCustomerDeliveryAddressStreet() ?? ''), 0, 53),
+                        'number' => substr((string) ($this->data->getCustomerDeliveryAddressNumber() ?? ''), 0, 4),
+                        'complement' => substr((string) ($this->data->getCustomerDeliveryAddressComplement() ?? ''), 0, 10),
                         'zipCode' => $this->data->getCustomerDeliveryAddressZipCode(),
-                        'district' => (substr($this->data->getCustomerDeliveryAddressDistrict(), 0, 44)),
+                        'district' => substr((string) ($this->data->getCustomerDeliveryAddressDistrict() ?? ''), 0, 44),
                         'city' => $this->data->getCustomerDeliveryAddressCity(),
                         'state' => $this->data->getCustomerDeliveryAddressState(),
                         'country' => $this->data->getCustomerDeliveryAddressCountry(),
@@ -221,7 +221,10 @@ class Request extends RequestAbstract
      */
     private function formatZipCode($zipCode)
     {
-        $digits = preg_replace('/[^0-9]/', '', $zipCode);
+        if ($zipCode === null || $zipCode === '') {
+            return $zipCode;
+        }
+        $digits = preg_replace('/[^0-9]/', '', (string) $zipCode);
         if (strlen($digits) === 8) {
             return substr($digits, 0, 5) . '-' . substr($digits, 5, 3);
         }
@@ -234,7 +237,10 @@ class Request extends RequestAbstract
      */
     private function formatPhoneClearSale($phone)
     {
-        $digits = substr(preg_replace('/[^0-9]/', '', $phone), 0, 13);
+        if ($phone === null || $phone === '') {
+            return $phone;
+        }
+        $digits = substr(preg_replace('/[^0-9]/', '', (string) $phone), 0, 13);
 
         if (strlen($digits) >= 12 && substr($digits, 0, 2) === '55') {
             $ddi = substr($digits, 0, 2);
