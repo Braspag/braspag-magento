@@ -96,7 +96,7 @@ class Request extends RequestAbstract
             ]
         ];
 
-        if (($antiFraudRequest = $this->data->getAntiFraudRequest()) && !$this->data->getPaymentAuthenticate()) {
+        if ($antiFraudRequest = $this->data->getAntiFraudRequest()) {
             $antiFraud = AntiFraudRequestFactory::make($antiFraudRequest);
             $this->params['body']['payment']['FraudAnalysis'] = $antiFraud->getParams();
             $this->params['body']['payment']['FraudAnalysis']['Shipping']['Identity'] = $this->data->getCustomerIdentity();
